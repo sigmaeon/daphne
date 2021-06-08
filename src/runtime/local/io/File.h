@@ -49,4 +49,20 @@ inline char *getLine(File *f) {
   return line;
 }
 
+inline char *getAll(File *f) {
+  fseek(f->identifier, 0, SEEK_END);
+  long fsize = ftell(f->identifier);
+  fseek(f->identifier, 0, SEEK_SET);
+
+  char *buf = (char *) malloc(fsize + 1);
+  fread(buf, 1, fsize, f->identifier);
+
+  buf[fsize] = 0;
+
+  f->read = fsize;
+  f->pos = fsize;
+
+  return buf;
+}
+
 #endif

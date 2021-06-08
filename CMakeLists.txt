@@ -15,6 +15,8 @@
 cmake_minimum_required(VERSION 3.13.4)
 project(daphne-prototype LANGUAGES CXX C)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 set(CMAKE_BUILD_WITH_INSTALL_NAME_DIR ON)
 
 set(CMAKE_CXX_STANDARD 14 CACHE STRING "C++ standard to conform to")

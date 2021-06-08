@@ -21,7 +21,7 @@
 #include <runtime/local/datastructures/DenseMatrix.h>
 #include <runtime/local/datastructures/Frame.h>
 
-#include <runtime/local/io/File.h>
+#include <runtime/local/io/Storage.h>
 
 #include <type_traits>
 
@@ -37,10 +37,10 @@
 // ****************************************************************************
 
 template <class DTRes> struct ReadCsv {
-  static void apply(DTRes *&res, File *file, size_t numRows, size_t numCols,
+  static void apply(DTRes *&res, Storage *s, size_t numRows, size_t numCols,
                     char delim) = delete;
 
-  static void apply(DTRes *&res, File *file, size_t numRows, size_t numCols,
+  static void apply(DTRes *&res, Storage *s, size_t numRows, size_t numCols,
                     char delim, ValueTypeCode *schema) = delete;
 };
 
@@ -49,15 +49,15 @@ template <class DTRes> struct ReadCsv {
 // ****************************************************************************
 
 template <class DTRes>
-void readCsv(DTRes *&res, File *file, size_t numRows, size_t numCols,
+void readCsv(DTRes *&res, Storage *s, size_t numRows, size_t numCols,
              char delim) {
-  ReadCsv<DTRes>::apply(res, file, numRows, numCols, delim);
+  ReadCsv<DTRes>::apply(res, s, numRows, numCols, delim);
 }
 
 template <class DTRes>
-void readCsv(DTRes *&res, File *file, size_t numRows, size_t numCols,
+void readCsv(DTRes *&res, Storage *s, size_t numRows, size_t numCols,
              char delim, ValueTypeCode *schema) {
-  ReadCsv<DTRes>::apply(res, file, numRows, numCols, delim, schema);
+  ReadCsv<DTRes>::apply(res, s, numRows, numCols, delim, schema);
 }
 
 // ****************************************************************************
@@ -90,7 +90,7 @@ void convert(std::string const &x, uint64_t *v) { *v = stoi(x); }
 // ----------------------------------------------------------------------------
 
 template <typename VT> struct ReadCsv<DenseMatrix<VT>> {
-  static void apply(DenseMatrix<VT> *&res, struct File *file, size_t numRows,
+  static void apply(DenseMatrix<VT> *&res, struct Storage *s, size_t numRows,
                     size_t numCols, char delim) {
     assert(numRows > 0 && "numRows must be > 0");
     assert(numCols > 0 && "numCols must be > 0");
@@ -106,7 +106,7 @@ template <typename VT> struct ReadCsv<DenseMatrix<VT>> {
     size_t row = 0, col = 0;
 
     while (1) {
-      line = getLine(file);
+      line = getLine(s);
 
       if (line == NULL)
         break;
@@ -136,7 +136,7 @@ template <typename VT> struct ReadCsv<DenseMatrix<VT>> {
 // ----------------------------------------------------------------------------
 
 template <> struct ReadCsv<Frame> {
-  static void apply(Frame *&res, struct File *file, size_t numRows,
+  static void apply(Frame *&res, struct Storage *s, size_t numRows,
                     size_t numCols, char delim, ValueTypeCode *schema) {
     assert(numRows > 0 && "numRows must be > 0");
     assert(numCols > 0 && "numCols must be > 0");
@@ -151,7 +151,7 @@ template <> struct ReadCsv<Frame> {
     size_t row = 0, col = 0;
 
     while (1) {
-      line = getLine(file);
+      line = getLine(s);
       if (line == NULL)
         break;
       lineStream.str(std::string(line));

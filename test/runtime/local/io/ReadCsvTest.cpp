@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
+#include <unistd.h>
+#include <limits.h>
+#include <string.h>
+
 #include <runtime/local/datastructures/DataObjectFactory.h>
 #include <runtime/local/datastructures/DenseMatrix.h>
 #include <runtime/local/io/ReadCsv.h>
-#include <runtime/local/io/File.h>
+#include <runtime/local/io/Storage.h>
 
 #include <tags.h>
 
@@ -38,9 +42,13 @@ TEMPLATE_PRODUCT_TEST_CASE("ReadCsv", TAG_KERNELS, (DenseMatrix), (double)) {
 
   char filename[] = "./test/runtime/local/io/ReadCsv1.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim);
+  readCsv(m, s, numRows, numCols, delim);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -67,9 +75,13 @@ TEMPLATE_PRODUCT_TEST_CASE("ReadCsv", TAG_KERNELS, (DenseMatrix), (uint8_t)) {
 
   char filename[] = "./test/runtime/local/io/ReadCsv2.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim);
+  readCsv(m, s, numRows, numCols, delim);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -98,9 +110,13 @@ TEMPLATE_PRODUCT_TEST_CASE("ReadCsv, col + row ignore", TAG_KERNELS,
 
   char filename[] = "./test/runtime/local/io/ReadCsv2.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim);
+  readCsv(m, s, numRows, numCols, delim);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -121,9 +137,13 @@ TEMPLATE_PRODUCT_TEST_CASE("ReadCsv, INF and NAN parsing", TAG_KERNELS,
 
   char filename[] = "./test/runtime/local/io/ReadCsv3.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim);
+  readCsv(m, s, numRows, numCols, delim);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -150,9 +170,13 @@ TEST_CASE("ReadCsv, frame of floats", TAG_KERNELS) {
 
   char filename[] = "./test/runtime/local/io/ReadCsv1.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim, schema);
+  readCsv(m, s, numRows, numCols, delim, schema);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -179,9 +203,13 @@ TEST_CASE("ReadCsv, frame of uint8s", TAG_KERNELS) {
 
   char filename[] = "./test/runtime/local/io/ReadCsv2.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim, schema);
+  readCsv(m, s, numRows, numCols, delim, schema);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -209,9 +237,13 @@ TEST_CASE("ReadCsv, col + row ignore", TAG_KERNELS) {
 
   char filename[] = "./test/runtime/local/io/ReadCsv2.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim, schema);
+  readCsv(m, s, numRows, numCols, delim, schema);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -231,9 +263,13 @@ TEST_CASE("ReadCsv, INF and NAN parsing", TAG_KERNELS) {
 
   char filename[] = "./test/runtime/local/io/ReadCsv3.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim, schema);
+  readCsv(m, s, numRows, numCols, delim, schema);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -260,9 +296,13 @@ TEST_CASE("ReadCsv, varying columns", TAG_KERNELS) {
 
   char filename[] = "./test/runtime/local/io/ReadCsv4.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim, schema);
+  readCsv(m, s, numRows, numCols, delim, schema);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -286,9 +326,13 @@ TEST_CASE("ReadCsv, frame async", TAG_KERNELS) {
 
   char filename[] = "./test/runtime/local/io/ReadCsv4.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim, schema);
+  readCsv(m, s, numRows, numCols, delim, schema);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -299,7 +343,7 @@ TEST_CASE("ReadCsv, frame async", TAG_KERNELS) {
   DataObjectFactory::destroy(m);
   m = NULL;
 
-  readCsv(m, file, numRows, numCols, delim, schema);
+  readCsv(m, s, numRows, numCols, delim, schema);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -319,9 +363,13 @@ TEMPLATE_PRODUCT_TEST_CASE("ReadCsv, DenseMatrix async", TAG_KERNELS, (DenseMatr
 
   char filename[] = "./test/runtime/local/io/ReadCsv1.csv";
   struct File *file = openFile(filename);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->file, file, sizeof(struct File));
+  s->type = STORAGE_TYPE_FILE;
+
   char delim = ',';
 
-  readCsv(m, file, numRows, numCols, delim);
+  readCsv(m, s, numRows, numCols, delim);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -334,7 +382,7 @@ TEMPLATE_PRODUCT_TEST_CASE("ReadCsv, DenseMatrix async", TAG_KERNELS, (DenseMatr
   DataObjectFactory::destroy(m);
   m = NULL;
 
-  readCsv(m, file, numRows, numCols, delim);
+  readCsv(m, s, numRows, numCols, delim);
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
@@ -343,6 +391,43 @@ TEMPLATE_PRODUCT_TEST_CASE("ReadCsv, DenseMatrix async", TAG_KERNELS, (DenseMatr
   CHECK(m->get(0, 1) == 5.41);
   CHECK(m->get(0, 2) == 6.22216);
   CHECK(m->get(0, 3) == 5);
+
+  DataObjectFactory::destroy(m);
+}
+
+TEST_CASE("ReadCsv, BPF", TAG_KERNELS) {
+  ValueTypeCode schema[] = { ValueTypeCode::SI8, ValueTypeCode::F32 };
+  Frame *m = NULL;
+
+  size_t numRows = 2;
+  size_t numCols = 2;
+
+  char cwd[PATH_MAX];
+  char *filename = (char *) malloc(PATH_MAX * sizeof(char));
+  char *bpf_file = (char *) malloc(PATH_MAX * sizeof(char));
+
+  getcwd(cwd, sizeof(cwd));
+  sprintf(filename, "%s/test/runtime/local/io/ReadCsv4.csv", cwd);
+  sprintf(bpf_file, "%s/src/runtime/local/io/bpf/ReadCsv.o", cwd);
+
+  void *mem = malloc(1024 * 1024);
+  memcpy(mem, filename, strlen(filename));
+
+  struct File *bpf_prog = openFile(bpf_file);
+  struct BPF *bpf = loadBpf(bpf_prog, mem);
+  struct Storage *s = (Storage *) malloc(sizeof(struct Storage));
+  memcpy(&s->bpf, bpf, sizeof(struct BPF));
+  s->type = STORAGE_TYPE_BPF;
+
+  char delim = ',';
+
+  readCsv(m, s, numRows, numCols, delim, schema);
+
+  REQUIRE(m->getNumRows() == numRows);
+  REQUIRE(m->getNumCols() == numCols);
+
+  CHECK(m->getColumn<int8_t>(0)->get(0, 0) == 1);
+  CHECK(m->getColumn<float>(1)->get(0, 0) == 0.5);
 
   DataObjectFactory::destroy(m);
 }

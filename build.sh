@@ -175,6 +175,14 @@ cmake --build . --target check-mlir
 
 cd $oldPwd
 
+# *****************************************************************************
+# Build the DAPHNE BPF programs.
+# *****************************************************************************
+
+cd ./src/runtime/local/io/bpf
+cmake .
+make
+cd $oldPwd
 
 # *****************************************************************************
 # Build the DAPHNE prototype.
