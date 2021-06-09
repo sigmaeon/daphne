@@ -36,9 +36,36 @@ struct BPF {
   int pos;
   int read;
 
+  int fd_prog;
+  int fd_data;
+  int fd_trigger;
+  int fd_status;
+  int fd_load;
+
   void *prog;
   void *data;
 };
+
+inline void triggerBPF(BPF *b) {
+  char one = '1';
+  write(b->fd_trigger, &one, sizeof(char));
+
+  lseek(b->fd_data, 0, SEEK_SET);
+
+  char status = '\0', trigger = '\0';
+  while(1) {
+    read(b->fd_status, &status, sizeof(char));
+    read(b->fd_trigger, &trigger, sizeof(char));
+    lseek(b->fd_status, 0, SEEK_SET);
+    lseek(b->fd_trigger, 0, SEEK_SET);
+
+    if(status == '0' && trigger == '0') break;
+
+    usleep(1000);
+  }
+
+  read(b->fd_data, b->data, DATA_BUF);
+}
 
 struct BPF *loadBpf(File *file, void *mem) {
   struct BPF *b = (struct BPF *)malloc(sizeof(struct BPF));
@@ -51,61 +78,43 @@ struct BPF *loadBpf(File *file, void *mem) {
   char file_prog[64];
   char file_data[64];
   char file_load[64];
+  char file_trigger[64];
+  char file_status[64];
 
   sprintf(file_prog, "/tmp/bpf/%i/program", b->slot);
   sprintf(file_data, "/tmp/bpf/%i/data", b->slot);
   sprintf(file_load, "/tmp/bpf/%i/load", b->slot);
+  sprintf(file_trigger, "/tmp/bpf/%i/trigger", b->slot);
+  sprintf(file_status, "/tmp/bpf/%i/status", b->slot);
 
-  int fd_prog = open(file_prog, O_RDWR, (mode_t)0777);
-  int fd_data = open(file_data, O_RDWR, (mode_t)0777);
-  int fd_load = open(file_load, O_RDWR, (mode_t)0777);
+  b->fd_prog = open(file_prog, O_RDWR, (mode_t)0777);
+  b->fd_data = open(file_data, O_RDWR, (mode_t)0777);
+  b->fd_load = open(file_load, O_RDWR, (mode_t)0777);
+  b->fd_trigger = open(file_trigger, O_RDWR, (mode_t)0777);
+  b->fd_status = open(file_status, O_RDWR, (mode_t)0777);
 
-  b->prog = getAll(b->file);
+  b->prog = getAll(b->file); // Read ELF file to buffer
   b->pos = -1;
   b->read = 0;
 
   char one = '1';
-  write(fd_prog, b->prog, PROG_BUF);
-  write(fd_data, b->data, DATA_BUF);
-  write(fd_load, &one, sizeof(char));
-
-  printf("%s\n", (char *) b->data);
-
-  close(fd_prog);
-  close(fd_data);
-  close(fd_load);
+  write(b->fd_prog, b->prog, PROG_BUF);
+  write(b->fd_data, b->data, DATA_BUF);
+  write(b->fd_load, &one, sizeof(char));
 
   return b;
 }
 
 inline char *getLine(BPF *b) {
-  char line[1024];
+  char line[1024 * 1024]; // Assumption: CSV lines does not go beyond 1 MB
   char *data = (char *) b->data;
 
   if(b->pos == -1) {
       b->pos = 0;
-      char file_trig[64];
-      sprintf(file_trig, "/tmp/bpf/%i/trigger", b->slot);
-
-      int fd_trig = open(file_trig, O_RDWR, (mode_t)0777);
-
-      char one = '1';
-      write(fd_trig, &one, sizeof(char));
-      close(fd_trig);
-      usleep(1000 * 25);
-
-      char file_data[64];
-      sprintf(file_data, "/tmp/bpf/%i/data", b->slot);
-      int fd_data = open(file_data, O_RDWR, (mode_t)0777);
-      read(fd_data, b->data, DATA_BUF);
-      close(fd_data);
-
-      b->pos = 0; // File opened, buffer (probably) filled
+      triggerBPF(b);
   }
 
   sscanf(data + b->pos, "%s\n", line);
-
-  printf("%s\n", line);
 
   b->read = strlen(line);
   b->pos += b->read;
