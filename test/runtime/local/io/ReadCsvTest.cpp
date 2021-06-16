@@ -33,6 +33,8 @@
 #include <cstdint>
 #include <limits>
 
+#include "../../../../src/runtime/local/io/bpf/ReadCsvDM.h"
+
 TEMPLATE_PRODUCT_TEST_CASE("ReadCsv", TAG_KERNELS, (DenseMatrix), (double)) {
   using DT = TestType;
   DT *m = nullptr;
@@ -396,22 +398,27 @@ TEMPLATE_PRODUCT_TEST_CASE("ReadCsv, DenseMatrix async", TAG_KERNELS, (DenseMatr
 }
 
 TEST_CASE("ReadCsv, BPF", TAG_KERNELS) {
-  ValueTypeCode schema[] = { ValueTypeCode::SI8, ValueTypeCode::F32 };
-  Frame *m = NULL;
-
   size_t numRows = 2;
-  size_t numCols = 2;
+  size_t numCols = 4;
+  uint8_t types[16] = { BPF_COL_INT64, BPF_COL_INT64, BPF_COL_INT64, BPF_COL_INT64 };
+  char delim = ',';
 
   char cwd[PATH_MAX];
   char *filename = (char *) malloc(PATH_MAX * sizeof(char));
   char *bpf_file = (char *) malloc(PATH_MAX * sizeof(char));
 
   getcwd(cwd, sizeof(cwd));
-  sprintf(filename, "%s/test/runtime/local/io/ReadCsv4.csv", cwd);
-  sprintf(bpf_file, "%s/src/runtime/local/io/bpf/ReadCsv.o", cwd);
+  sprintf(filename, "%s/test/runtime/local/io/ReadCsv2.csv", cwd);
+  sprintf(bpf_file, "%s/src/runtime/local/io/bpf/ReadCsvDM.o", cwd);
 
   void *mem = malloc(1024 * 1024);
-  memcpy(mem, filename, strlen(filename));
+  struct bpf_read_csv_dm *meta = (struct bpf_read_csv_dm *) mem;
+
+  memcpy(&meta->filename, filename, strlen(filename));
+  memcpy(&meta->delim, &delim, sizeof(char));
+  memcpy(&meta->rows, &numRows, sizeof(size_t));
+  memcpy(&meta->cols, &numCols, sizeof(size_t));
+  memcpy(&meta->types, &types, sizeof(types));
 
   struct File *bpf_prog = openFile(bpf_file);
   struct BPF *bpf = loadBpf(bpf_prog, mem);
@@ -419,15 +426,23 @@ TEST_CASE("ReadCsv, BPF", TAG_KERNELS) {
   memcpy(&s->bpf, bpf, sizeof(struct BPF));
   s->type = STORAGE_TYPE_BPF;
 
-  char delim = ',';
+  triggerBPF(bpf);
 
-  readCsv(m, s, numRows, numCols, delim, schema);
+  DenseMatrix<long> *m = DataObjectFactory::create<DenseMatrix<long>>(numRows, numCols, false);
+  memcpy(m->getValues(), ((char *) mem) + (1024 * 1024) - (numRows * numCols * sizeof(long)), (numRows * numCols * sizeof(long)));
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
 
-  CHECK(m->getColumn<int8_t>(0)->get(0, 0) == 1);
-  CHECK(m->getColumn<float>(1)->get(0, 0) == 0.5);
+  CHECK(m->get(0, 0) == 1);
+  CHECK(m->get(0, 1) == 2);
+  CHECK(m->get(0, 2) == 3);
+  CHECK(m->get(0, 3) == 4);
+
+  CHECK(m->get(1, 0) == -1);
+  CHECK(m->get(1, 1) == -2);
+  CHECK(m->get(1, 2) == -3);
+  CHECK(m->get(1, 3) == -4);
 
   DataObjectFactory::destroy(m);
 }
