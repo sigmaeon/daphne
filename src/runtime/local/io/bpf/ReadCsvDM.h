@@ -10,7 +10,7 @@ struct bpf_read_csv_dm {
   char delim;
   size_t rows;
   size_t cols;
-  uint8_t types[16];
+  uint8_t types[128];
 };
 
 #endif

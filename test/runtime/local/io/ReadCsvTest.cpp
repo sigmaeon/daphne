@@ -429,7 +429,7 @@ TEST_CASE("ReadCsv, BPF", TAG_KERNELS) {
   triggerBPF(bpf);
 
   DenseMatrix<long> *m = DataObjectFactory::create<DenseMatrix<long>>(numRows, numCols, false);
-  memcpy(m->getValues(), ((char *) mem) + (1024 * 1024) - (numRows * numCols * sizeof(long)), (numRows * numCols * sizeof(long)));
+  memcpy(m->getValues(), ((char *) mem) + sizeof(struct bpf_read_csv_dm), (numRows * numCols * sizeof(long)));
 
   REQUIRE(m->getNumRows() == numRows);
   REQUIRE(m->getNumCols() == numCols);
