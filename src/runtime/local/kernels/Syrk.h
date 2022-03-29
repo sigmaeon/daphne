@@ -56,8 +56,8 @@ struct Syrk<DenseMatrix<double>, DenseMatrix<double>> {
         const size_t numRows = arg->getNumRows();
         const size_t numCols = arg->getNumCols();
 
-        if(res == nullptr)
-            res = DataObjectFactory::create<DenseMatrix<double>>(numCols, numCols, false);
+//        if(res == nullptr)
+//            res = DataObjectFactory::create<DenseMatrix<double>>(numCols, numCols, false);
 
         cblas_dsyrk(CblasRowMajor,
             CblasUpper,
@@ -84,8 +84,8 @@ struct Syrk<DenseMatrix<float>, DenseMatrix<float>> {
         const size_t numRows = arg->getNumRows();
         const size_t numCols = arg->getNumCols();
 
-        if(res == nullptr)
-            res = DataObjectFactory::create<DenseMatrix<float>>(numCols, numCols, false);
+//        if(res == nullptr)
+//            res = DataObjectFactory::create<DenseMatrix<float>>(numCols, numCols, false);
 
         cblas_ssyrk(CblasRowMajor,
             CblasUpper,

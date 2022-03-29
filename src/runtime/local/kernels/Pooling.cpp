@@ -47,9 +47,9 @@ namespace Pooling {
         // 1 / pool length for averaging
         auto plen = static_cast<typename DTRes::VT>(1) / static_cast<typename DTRes::VT>(pool_w * pool_h);
 
-        if (res == nullptr) {
-            res = DataObjectFactory::create<DTRes>(batch_size, CPQ, true);
-        }
+//        if (res == nullptr) {
+//            res = DataObjectFactory::create<DTRes>(batch_size, CPQ, true);
+//        }
         if (P == 1 && Q == 1 && img_w == 1) {
             //quick-path w/o materialized index arrays and
             //simplified inner loops for P = 1, Q = 1, W = 1
