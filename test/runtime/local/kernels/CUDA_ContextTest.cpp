@@ -25,6 +25,6 @@ TEST_CASE("CreateCUDAContext", TAG_KERNELS) {
     DaphneUserConfig user_config{};
     auto dctx = std::make_unique<DaphneContext>(user_config);
     CUDA::createCUDAContext(dctx.get());
-    auto p = dynamic_cast<CUDAContext*>(dctx->getCUDAContext(0))->getDeviceProperties();
+    auto p = CUDAContext::get(dctx, deviceID)->getDeviceProperties();
     CHECK(p);
 }

@@ -212,7 +212,7 @@ void MTWrapper<DenseMatrix<VT>>::combineOutputs(DenseMatrix<VT>***& res_, DenseM
 #else
 template<typename VT>
 void MTWrapper<DenseMatrix<VT>>::combineOutputs(DenseMatrix<VT>***& res_, DenseMatrix<VT>***& res_cuda_, size_t numOutputs,
-        mlir::daphne::VectorCombine* combines) { }
+        mlir::daphne::VectorCombine* combines, DCTX(ctx)) { }
 #endif
 
 template class MTWrapper<DenseMatrix<double>>;
