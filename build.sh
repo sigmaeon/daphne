@@ -35,6 +35,7 @@ function printHelp {
     echo "  -h, --help        Print this help message and exit."
     echo "  --target TARGET   Build the cmake target TARGET (defaults to '$target')"
     echo "  --clean           Remove all temporary build directories for a fresh build"
+    echo "  --arrow           Compile DAPHNE with Arrow and Parquet support"
 }
 
 #******************************************************************************
@@ -86,6 +87,7 @@ installLibDir=lib
 
 # Defaults.
 target="daphne"
+arrow="OFF"
 
 while [[ $# -gt 0 ]]
 do
@@ -103,6 +105,9 @@ do
         --target)
             target=$1
             shift
+            ;;
+        --arrow)
+            arrow="ON"
             ;;
         *)
             printf "Unknown option: '%s'\n\n" $key
@@ -300,17 +305,19 @@ cd $initPwd
 
 mkdir --parents build
 cd build
+
 cmake -G Ninja .. \
     -DMLIR_DIR=$thirdpartyPath/$llvmName/build/lib/cmake/mlir/ \
     -DLLVM_DIR=$thirdpartyPath/$llvmName/build/lib/cmake/llvm/ \
     -DANTLR4_RUNTIME_DIR=$thirdpartyPath/$antlrDirName/$antlrCppRuntimeDirName \
     -DANTLR4_JAR_LOCATION=$thirdpartyPath/$antlrDirName/$antlrJarName \
     -DOPENBLAS_INST_DIR=$thirdpartyPath/$openBlasDirName/$openBlasInstDirName \
+    -DCMAKE_INSTALL_LIBDIR=$installLibDir \
     -DCMAKE_PREFIX_PATH="$grpcInstDir" \
-    -DCMAKE_INSTALL_LIBDIR=$installLibDir
+    -DUSE_ARROW=$arrow
+
 # optional cmake flags (to be added to the command above):
 # -DUSE_CUDA=ON
-# -DUSE_ARROW=ON
 # -DCMAKE_BUILD_TYPE=Debug
 
 cmake --build . --target $target
