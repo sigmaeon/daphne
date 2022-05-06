@@ -77,6 +77,7 @@ set(TEST_SOURCES
         runtime/local/kernels/ExtractRowTest.cpp
         runtime/local/kernels/FilterRowTest.cpp
         runtime/local/kernels/GroupJoinTest.cpp
+        runtime/local/kernels/GroupTest.cpp
         runtime/local/kernels/HasSpecialValueTest.cpp
         runtime/local/kernels/InnerJoinTest.cpp
         runtime/local/kernels/IsSymmetricTest.cpp
