@@ -109,7 +109,7 @@ struct ExtractCol<Frame, Frame, DenseMatrix<VTSel>> {
         const size_t numColsRes = sel->getNumRows();
         const size_t * colIdxs = reinterpret_cast<const size_t *>(sel->getValues());
         for(size_t i = 0; i < numColsRes; i++) {
-            if(colIdxs[i] < 0 || colIdxs[i] >= arg->getNumCols())
+            if(colIdxs[i] >= arg->getNumCols())
                 throw std::runtime_error("column index out of bounds");
         }
         const size_t numRows = arg->getNumRows();
